@@ -3,8 +3,8 @@
 # ---------------------------------------------------------------
 # macOS Cleanup Tool
 # Author: [maozaizi] 
-# Version: 0.1
-# Date: [2024-12-18]
+# Version: 0.2
+# Date: [2025-05-08]
 #
 # A lightweight and efficient macOS cleanup tool powered by 
 # a simple shell script. Run it via the command line to keep 
@@ -16,6 +16,10 @@
 # - Cleans Xcode derived data (if installed)
 # - Empties Trash and Safari cache
 # - Flushes DNS cache for network optimization
+#
+# CHANGELOG v0.2:
+# - Replaced dangerous `rm -rf /private/tmp/*` with safer `find`-based deletion
+# - Explicitly excludes mihomo-party.sock and mihomo-party-helper.sock
 #
 # Usage:
 # Run this script with administrative privileges to perform 
@@ -39,10 +43,13 @@ sudo rm -rf /Library/Caches/*
 echo "Removing user log files..."
 rm -rf ~/Library/Logs/*
 
-# --- Step 4: Clear temporary files ---
-echo "Clearing temporary files..."
-sudo rm -rf /private/tmp/*
-sudo rm -rf /var/tmp/*
+# --- Step 4: Clear temporary files safely ---
+echo "Clearing temporary files (excluding mihomo-party sock files)..."
+sudo find /private/tmp -mindepth 1 \
+  ! -name 'mihomo-party.sock' \
+  ! -name 'mihomo-party-helper.sock' \
+  -exec rm -rf {} +
+sudo find /var/tmp -mindepth 1 -exec rm -rf {} +
 
 # --- Step 5: Empty the Trash ---
 echo "Emptying the Trash..."
